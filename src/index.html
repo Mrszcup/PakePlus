@@ -1,22 +1,362 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="styles.css" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus App</title>
-        <script type="module" src="/main.js" defer></script>
-    </head>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>离线工作证生成器 (橙色版)</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+            background-color: #fcf8f3;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 40px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+        .container {
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #E65100;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .input-group input[type="text"],
+        .input-group input[type="url"],
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            font-family: inherit;
+            resize: vertical;
+        }
+        .input-group input[type="text"]:focus,
+        .input-group input[type="url"]:focus,
+        .input-group textarea:focus {
+            border-color: #F57C00;
+            outline: none;
+        }
+        .input-group input[type="file"] {
+            width: 100%;
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        .button-group button {
+            flex-grow: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        .button-group button:active {
+            transform: scale(0.98);
+        }
+        #previewBtn {
+            background-color: #F57C00;
+        }
+        #previewBtn:hover {
+            background-color: #E65100;
+        }
+        #downloadBtn {
+            background-color: #FFA000;
+        }
+        #downloadBtn:hover {
+            background-color: #FF8F00;
+        }
+        .preview-area {
+            width: 100%;
+            max-width: 400px;
+        }
+        #badge-preview-container {
+            width: 384px; 
+            height: 571px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            overflow: hidden; 
+            margin: 0 auto;
+        }
+        #badge-preview {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(10, 25, 47, 0.8), rgba(10, 25, 47, 0.8)), url('./bng.png');
+            background-size: cover;
+            background-position: center;
+            border: 1px solid #ddd;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+        #badge-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #F57C00;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #F57C00;
+            padding-bottom: 10px;
+            width: 100%;
+        }
+        #badge-logo {
+            height: 50px;
+            width: auto;
+        }
+        #photo-display-container {
+            width: 180px;
+            height: 180px;
+            flex-shrink: 0; 
+            border: 3px solid #F57C00;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fdfaf6;
+            overflow: hidden;
+        }
+        #photo-display {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .info-item {
+            font-size: 15px;
+            margin-bottom: 8px;
+            width: 100%;
+            text-align: left;
+        }
+        .info-item .label {
+            font-weight: bold;
+            color: #cccccc;
+            display: inline-block;
+            width: 90px;
+        }
+        .info-item .value {
+            color: #FFFFFF;
+            white-space: pre-wrap; 
+            font-weight: bold;
+        }
+        #badge-qr-code {
+            margin-top: auto;
+            padding-top: 15px;
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        #badge-qr-code canvas, #badge-qr-code img {
+            margin: 0 auto;
+            display: block;
+        }
+        .parent-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 300px;
+            justify-content: space-between;
+        }
+        #badge-footer {
+            position: absolute;
+            font-size: 14px;
+            color: #FFFFFF;
+            text-align: center;
+            width: 100%;
+            bottom: 10px;
+        }
+        #badge-id-wrapper {
+            margin-top: 5px;
+        }
+        #badge-id-wrapper .label, #badge-id-wrapper .value {
+            width: auto;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>工作证信息录入</h1>
+        <div class="input-group">
+            <label for="name">姓名：</label>
+            <input type="text" id="name" placeholder="请输入姓名" value="李明">
+        </div>
+        <div class="input-group">
+            <label for="company">工作单位：</label>
+            <input type="text" id="company" placeholder="请输入工作单位" value="MTP 动力技术部">
+        </div>
+        <div class="input-group">
+            <label for="level">操作等级：</label>
+            <input type="text" id="level" placeholder="例如：高级电工" value="特级操作员">
+        </div>
+        <div class="input-group">
+            <label for="photo">免冠照片：</label>
+            <input type="file" id="photo" accept="image/*">
+        </div>
+        <div class="input-group">
+            <label for="idNumber">证书编号：</label>
+            <input type="text" id="idNumber" placeholder="例如：A-12345" value="MTP-2023-007">
+        </div>
+        <div class="input-group">
+            <label for="equipment">可操作设备：</label>
+            <textarea id="equipment" rows="4">PDF2230DB超前钻机、WPDXXX23钻机、WPDXXX23钻机、WPDXXX23钻机</textarea>
+        </div>
+        <div class="button-group">
+            <button id="previewBtn">预览工作证</button>
+            <button id="downloadBtn">下载图片</button>
+        </div>
+    </div>
+    <div class="preview-area">
+        <h2>预览区域</h2>
+        <div id="badge-preview-container">
+            <div id="badge-preview">
+                <div id="badge-header">
+                    <img id="badge-logo" src="./logo.png" alt="公司Logo">
+                    <span>海聚钻机操作证</span>
+                </div>
+                <div id="photo-display-container">
+                    <img id="photo-display" src="" alt="免冠照片">
+                </div>
+                <div class="info-item">
+                    <span class="label">姓名:</span>
+                    <span id="badge-name" class="value"></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">工作单位:</span>
+                    <span id="badge-company" class="value"></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">操作等级:</span>
+                    <span id="badge-level" class="value"></span>
+                </div>
+                <div class="info-item" style="line-height: 1.8;">
+                    <span class="label">认证技能:</span><br>
+                    <span id="badge-equipment" style=" padding-left: 30px;" class="value"></span>
+                </div>
+                <div id="badge-footer">
+                    <span>浙江海聚科技有限公司</span>
+                    <div id="badge-id-wrapper">
+                        <span class="label">证书编号: </span>
+                        <span id="badge-id" class="value"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="./qrcode.min.js"></script>
+    <script src="./html2canvas.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const nameInput = document.getElementById('name');
+            const companyInput = document.getElementById('company');
+            const levelInput = document.getElementById('level');
+            const photoInput = document.getElementById('photo');
+            const idNumberInput = document.getElementById('idNumber');
+            const equipmentInput = document.getElementById('equipment');
+            const badgeName = document.getElementById('badge-name');
+            const badgeCompany = document.getElementById('badge-company');
+            const badgeLevel = document.getElementById('badge-level');
+            const badgeId = document.getElementById('badge-id');
+            const photoDisplay = document.getElementById('photo-display');
+            const qrCodeContainer = document.getElementById('badge-qr-code');
+            const badgePreviewContainer = document.getElementById('badge-preview-container');
+            const badgeEquipment = document.getElementById('badge-equipment');
+            const previewBtn = document.getElementById('previewBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
 
-    <body>
-        <main class="container">
-            <h1>Welcome to PakePlus</h1>
+            photoInput.addEventListener('change', function(event) {
+                if (event.target.files && event.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        photoDisplay.src = e.target.result;
+                    }
+                    reader.readAsDataURL(event.target.files[0]);
+                }
+            });
 
-            <form class="row" id="greet-form">
-                <input id="greet-input" placeholder="Enter a name..." />
-                <button type="submit">Greet</button>
-            </form>
-            <p id="greet-msg"></p>
-        </main>
-    </body>
+            previewBtn.addEventListener('click', function() {
+                badgeName.textContent = nameInput.value || '待填写';
+                badgeCompany.textContent = companyInput.value || '待填写';
+                badgeLevel.textContent = levelInput.value || '待填写';
+                badgeId.textContent = idNumberInput.value || '待填写';
+                badgeEquipment.textContent = equipmentInput.value || '待填写';
+                qrCodeContainer.innerHTML = '';
+                const qrUrl = "https://example.com/user/" + idNumberInput.value;
+                if (qrUrl) {
+                    new QRCode(qrCodeContainer, {
+                        text: qrUrl,
+                        width: 90,
+                        height: 90,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                }
+            });
+
+            downloadBtn.addEventListener('click', function() {
+                html2canvas(badgePreviewContainer, { scale: 3, useCORS: true, backgroundColor: null }).then(canvas => {
+                    const link = document.createElement('a');
+                    const newCanvas = document.createElement('canvas');
+                    const padding = 4;
+                    newCanvas.width = canvas.width - padding * 2;
+                    newCanvas.height = canvas.height - padding * 2;
+                    const newCtx = newCanvas.getContext('2d');
+                    newCtx.beginPath();
+                    newCtx.moveTo(5, 0);
+                    newCtx.lineTo(newCanvas.width - 5, 0);
+                    newCtx.quadraticCurveTo(newCanvas.width, 0, newCanvas.width, 5);
+                    newCtx.lineTo(newCanvas.width, newCanvas.height - 5);
+                    newCtx.quadraticCurveTo(newCanvas.width, newCanvas.height, newCanvas.width - 5, newCanvas.height);
+                    newCtx.lineTo(5, newCanvas.height);
+                    newCtx.quadraticCurveTo(0, newCanvas.height, 0, newCanvas.height - 5);
+                    newCtx.lineTo(0, 5);
+                    newCtx.quadraticCurveTo(0, 0, 5, 0);
+                    newCtx.closePath();
+                    newCtx.clip();
+                    newCtx.drawImage(canvas, padding, padding, newCanvas.width, newCanvas.height, 0, 0, newCanvas.width, newCanvas.height);
+                    link.href = newCanvas.toDataURL('image/png');
+                    const fileName = `工作证-${nameInput.value || '未命名'}.png`;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }).catch(err => {
+                    console.error("图片生成失败!", err);
+                    alert("图片生成失败，请检查控制台错误信息。");
+                });
+            });
+
+            previewBtn.click();
+        });
+    </script>
+</body>
 </html>
